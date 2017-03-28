@@ -14,7 +14,7 @@ var app=express();
 {var rootLoginTable;
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
-var url = 'mongodb://192.168.118.21:27017/target';
+var url = 'mongodb://192.168.118.20:27017/target';
 MongoClient.connect(url, function(err, db) {
     assert.equal(null, err);
    rootLoginTable= db.collection('login');
@@ -22,6 +22,9 @@ MongoClient.connect(url, function(err, db) {
 });
 }
 
+
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -34,11 +37,25 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     app.get('/', function (req, res) {
         res.sendFile(path.join(__dirname + '/index.html'));
     });
+
+
     app.post('/signup', function (req, res) {
         var params=req.body;
         console.log(req.body);
         signup(params);
-        res.send('Singup-continued');
+        var entry={username:params.username,name:params.name_us,password:params.pass_us}
+        rootLoginTable.insert(entry,function(err,result){
+
+            console.log(result);
+                if(err){
+                    res.sendFile("Choose a different Username ");
+                }
+                else{res.render(path.join(__dirname + '/filldetails.html'),{branch:params.username});
+
+                };
+
+        });
+        ;
     });
 
     app.post('/login', function (req, res) {
@@ -62,7 +79,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
     });
 
-    app.listen(3043, "192.168.118.21");
+    app.listen(3043, "192.168.118.20");
 }
 
 
