@@ -23,7 +23,7 @@ var prepopulate=getCookie("enteredindatabase");
 ws.onmessage=
         function(d){console.log(d);
         datax=d;
-        data=JSON.parse(d);
+        data=JSON.parse(d.data);
             if(data.action==='prepopulate')
                      {alert();
                     document.getElementById('name').value=data.name;
