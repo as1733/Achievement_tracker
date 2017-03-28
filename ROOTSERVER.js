@@ -2,14 +2,12 @@
  * Created by as1733 on 27-03-2017.
  */
 var findres=-2;//will have rejection codes on -1 if wrong username 0 for wrong password 1 for correct combination;
-
+var webSocketServer = require('ws').Server;
 var express=require('express');
 var path = require('path');
+var cookieParser = require('cookie-parser')
+var server=new webSocketServer({port:9060});
 var bodyParser = require('body-parser');
-{
-
-
-}
 var app=express();
 {var rootLoginTable;
 var MongoClient = require('mongodb').MongoClient;
@@ -25,7 +23,7 @@ MongoClient.connect(url, function(err, db) {
 
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
-
+app.use(cookieParser("aditya@13isscr"))
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -35,6 +33,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     app.use(express.static(('public')));
     console.log(__dirname);
     app.get('/', function (req, res) {
+        res.cookie('username',"newUser");
         res.sendFile(path.join(__dirname + '/index.html'));
     });
 
@@ -42,15 +41,22 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     app.post('/signup', function (req, res) {
         var params=req.body;
         console.log(req.body);
+        res.cookie('username',"done");
+        console.log('cookie created successfully');
         signup(params);
         var entry={username:params.username,name:params.name_us,password:params.pass_us}
         rootLoginTable.insert(entry,function(err,result){
 
             console.log(result);
                 if(err){
-                    res.sendFile("Choose a different Username ");
+                    res.cookie("enteredindatabase","false");
+                    res.sendFile(path.join(__dirname + '/index.html'));
                 }
-                else{res.render(path.join(__dirname + '/filldetails.html'),{branch:params.username});
+                else{
+                    res.cookie("enteredindatabase","true");
+                    res.cookie("username",params.username);
+
+                    res.render(path.join(__dirname + '/filldetails.html'),{branch:params.username});
 
                 };
 
@@ -108,5 +114,27 @@ function signup(){};
 function findinDB (db,collection,field,value,result){
     var url;
 
+
+}
+
+
+{
+
+    server.on("connection",function(link){
+    link.on('message',function(data){
+        console.log("GOTTTTTTTTT");
+       var params= JSON.parse(data);
+    if(params.action==="prepopulate")
+    {rootLoginTable.findOne({username:params.username}).then(function(d){
+        console.log("GOTTTTTTTTT"+params);
+          return(  link.send(JSON.stringify({username:data.username,name:data.name,action:"prepopulate"})));
+                console.log(JSON.stringify({username:data.username,name:data.name,action:"prepopulate"}));
+    });
+
+
+    }
+    });
+
+});
 
 }
