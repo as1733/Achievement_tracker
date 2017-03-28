@@ -126,7 +126,10 @@ function findinDB (db,collection,field,value,result){
        var params= JSON.parse(data);
     if(params.action==="prepopulate")
     {rootLoginTable.findOne({username:params.username}),(function(err,d){
-        console.log("GOTTTTTTTTT"+params);
+        console.log("these are params");
+        console.log(params);
+        console.log("these are the data from db");
+           console.log(d);
             link.send(JSON.stringify({username:d.username,name:d.name,action:"prepopulate"}));
                 console.log(JSON.stringify({username:data.username,name:data.name,action:"prepopulate"}));
     }
